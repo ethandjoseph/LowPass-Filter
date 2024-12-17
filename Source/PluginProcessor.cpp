@@ -1,15 +1,6 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
-//==============================================================================
 LowPassFilterAudioProcessor::LowPassFilterAudioProcessor()
 #ifndef JucePlugin_PreferredChannelConfigurations
      : AudioProcessor (BusesProperties()
@@ -19,7 +10,9 @@ LowPassFilterAudioProcessor::LowPassFilterAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
+    apvts(*this, nullptr, "Parameters", createParameterLayout()),
+    lowPassFilter(juce::dsp::IIR::Coefficients<float>::makeLowPass(44100, 20000.0f, 0.1f))
 #endif
 {
 }
@@ -90,17 +83,19 @@ void LowPassFilterAudioProcessor::changeProgramName (int index, const juce::Stri
 {
 }
 
-//==============================================================================
 void LowPassFilterAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    juce::dsp::ProcessSpec spec;
+    spec.sampleRate = sampleRate;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = getTotalNumOutputChannels();
+
+    lowPassFilter.prepare(spec);
+    lowPassFilter.reset();
 }
 
 void LowPassFilterAudioProcessor::releaseResources()
 {
-    // When playback stops, you can use this as an opportunity to free up any
-    // spare memory, etc.
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -129,39 +124,31 @@ bool LowPassFilterAudioProcessor::isBusesLayoutSupported (const BusesLayout& lay
 }
 #endif
 
+void LowPassFilterAudioProcessor::updateFilter()
+{
+    float frequencyValue = apvts.getRawParameterValue("FREQUENCY")->load();
+    float qValue = apvts.getRawParameterValue("Q")->load();
+    *lowPassFilter.state = *juce::dsp::IIR::Coefficients<float>::makeLowPass(44100, frequencyValue, qValue);
+}
+
+// Process Block =================================================================================================/
 void LowPassFilterAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
-
-    // In case we have more outputs than inputs, this code clears any output
-    // channels that didn't contain input data, (because these aren't
-    // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
-    {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
-    }
+    juce::dsp::AudioBlock<float> block(buffer);
+    updateFilter();
+    lowPassFilter.process(juce::dsp::ProcessContextReplacing<float>(block));
 }
+//================================================================================================================/
 
-//==============================================================================
 bool LowPassFilterAudioProcessor::hasEditor() const
 {
-    return true; // (change this to false if you choose to not supply an editor)
+    return true;
 }
 
 juce::AudioProcessorEditor* LowPassFilterAudioProcessor::createEditor()
@@ -169,22 +156,45 @@ juce::AudioProcessorEditor* LowPassFilterAudioProcessor::createEditor()
     return new LowPassFilterAudioProcessorEditor (*this);
 }
 
-//==============================================================================
 void LowPassFilterAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
 }
 
 void LowPassFilterAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
 }
 
-//==============================================================================
-// This creates new instances of the plugin..
+juce::AudioProcessorValueTreeState::ParameterLayout LowPassFilterAudioProcessor::createParameterLayout()
+{
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "FREQUENCY",               // Parameter ID
+        "Cut off Frequency",       // Parameter name
+        juce::NormalisableRange{
+                    20.f,          // rangeStart
+                    20000.f,       // rangeEnd
+                    0.1f,          // intervalValue
+                    0.2f,          // skewFactor
+                    false },       // useSymmetricSkew
+        -12.0f                     // Default value in dB
+    ));
+
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(
+        "Q",                       // Parameter ID
+        "Quality Factor",          // Parameter name
+        juce::NormalisableRange{
+                    0.1f,          // rangeStart
+                    1.0f,          // rangeEnd
+                    0.01f,         // intervalValue
+                    0.9f,          // skewFactor
+                    false },       // useSymmetricSkew
+        0.1f                       // Default value in dB
+    ));
+
+    return { params.begin(), params.end() };
+}
+
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new LowPassFilterAudioProcessor();
