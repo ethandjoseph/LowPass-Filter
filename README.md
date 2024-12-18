@@ -2,7 +2,7 @@
  LP filter based on JUCE IIR filter
  Referred to The Audio Programmer's [JUCE IIR filter tutorial](https://youtu.be/YJ4YbV6TDo0).
 
-![Low Cut screenshot](https://github.com/ethandjoseph/LowPass-Filter/blob/main/LowPass%20Filter%20plugin%20screenshot.png)
+![Low Pass filter plugin screenshot](https://github.com/ethandjoseph/LowPass-Filter/blob/main/LowPass%20Filter%20plugin%20screenshot.png)
 
 ## Code
 JUCE 8 project consisting of
