@@ -12,7 +12,3 @@ JUCE 8 project consisting of
 ## [Release](https://github.com/ethandjoseph/LowPass-Filter/releases)
 - VST3
 - 64 bit
-
-### Platform Compatibility
-- Windows
-- 64 bit
