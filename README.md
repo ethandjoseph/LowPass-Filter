@@ -2,14 +2,13 @@
  LP filter based on JUCE IIR filter
  Referred to The Audio Programmer's [JUCE IIR filter tutorial](https://youtu.be/YJ4YbV6TDo0).
 
-![Synth screenshot](https://github.com/ethandjoseph/Sawnthesizer/blob/main/Sawnthesizer%20screenshot.png)
+![Low Pass filter plugin screenshot](https://github.com/ethandjoseph/LowPass-Filter/blob/main/LowPass%20Filter%20plugin%20screenshot.png)
 
 ## Code
 JUCE 8 project consisting of
-1. MIDI input
-2. ADSR controls
-3. Output Volume control
+1. Cut-off frequency control
+2. Resonance control
 
-## [Release](https://github.com/ethandjoseph/Sawnthesizer/releases)
-- VST3 instrument
+## [Release](https://github.com/ethandjoseph/LowPass-Filter/releases)
+- VST3
 - 64 bit
