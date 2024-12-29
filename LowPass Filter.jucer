@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="OI7sI0" name="LowPass Filter" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginFormats="buildStandalone,buildVST3">
+              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" pluginFormats="buildAAX,buildAU,buildAUv3,buildLV2,buildStandalone,buildVST3"
+              companyName="Earth Mover DSP" pluginManufacturerCode="EDSP" pluginCode="JLPF"
+              pluginVST3Category="EQ,Filter" pluginAAXCategory="1,8192" lv2Uri="http://earthmoverdsp.com/plugins/LowPassFilter">
   <MAINGROUP id="YnUOfz" name="LowPass Filter">
     <GROUP id="{5FB9F232-921A-8439-802F-9259A3564AF7}" name="Source">
       <FILE id="gOCfjX" name="PluginProcessor.cpp" compile="1" resource="0"

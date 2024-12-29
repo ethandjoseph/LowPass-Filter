@@ -13,7 +13,7 @@ public:
     void resized() override;
 
 private:
-    juce::Slider frequencySlider; // slider itself needs to outlive the attachment - so attachment needs to below (destruction happens upwards)
+    juce::Slider frequencySlider;
     juce::Slider qKnob;
     juce::Label frequencyLabel;
     juce::Label qLabel;
